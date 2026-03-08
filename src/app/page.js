@@ -1,8 +1,8 @@
 import AuthCard from "@/components/Shared/AuthCard";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
-import { authOptions } from "./api/auth/[...nextauth]/route";
 import AuthButtons from "@/components/Auth/AuthButtons";
+import { authOptions } from "@/lib/authOptions";
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
