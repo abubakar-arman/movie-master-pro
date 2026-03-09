@@ -1,37 +1,17 @@
 "use client"
 import logger from '@/lib/logger';
 import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-// import loginImg from '../../assets/login.png';
-// import useAuth from '../../hooks/useAuth';
-// import { useMutation, useQueryClient } from '@tanstack/react-query';
-// import useAxiosSecure from '../../hooks/useAxiosSecure';
+import loginImg from '../../assests/popcorn.png';
+import Image from 'next/image';
 
 
 const Login = () => {
-    //     const axiosSecure = useAxiosSecure()
-    //     const { login, loginWithGoogle } = useAuth();
-    //     const navigate = useNavigate();
-    //     const location = useLocation();
     const { register, handleSubmit, formState: { errors } } = useForm()
     const router = useRouter()
-
-    // const from = location.state?.from || '/';
-    // logger.debug('kjkj', location)
-    // return
-    // const queryClient = useQueryClient();
-    // const mutation = useMutation({
-    //     mutationFn: (user) => axiosSecure.post('/api/users', user),
-    //     onSuccess: () => {
-    //         queryClient.invalidateQueries({ queryKey: ['users'] });
-    //         toast.success('New user found! Registered in System.');
-    //         navigate(from);
-    //     },
-    //     onError: (err) => console.error('Mutation Failed :', err)
-    // });
 
     const invalidPassErr = `Enter a valid password:
 - Must have an Uppercase letter
@@ -39,6 +19,7 @@ const Login = () => {
 
     const handleEmailLogin = async (formData) => {
         logger.debug({ formData })
+
         const result = await signIn('credentials', {
             redirect: false,
             email: formData.email,
@@ -46,46 +27,30 @@ const Login = () => {
         })
         // logger.debug(result)
         if (result.ok) {
+            toast.success('Log in successful');
             router.push('/')
-        }
-        // console.log('kkk', result);
+        } else {
+            toast.error('Invalid email or password');
+            console.debug('Login Failed ')
 
-        // if(result)
-        // try {
-        //     await login(data.email, data.password);
-        //     navigate(from);
-        // } catch {
-        //     toast.error('Invalid email or password');
-        // }
+        }
     };
 
-    // const isUserExist = async (email) => {
-    //     const res = await axiosSecure.get(`/api/user/exists/${email}`);
-    //     return res.data.msg;
-    // };
-
-    // const handleGoogleLogin = async () => {
-    //     try {
-    //         const creds = await loginWithGoogle();
-    //         const { email, displayName: name, photoURL: photoUrl } = creds.user;
-
-    //         const userExists = await isUserExist(email);
-    //         if (userExists) {
-    //             toast.success('User already exists. Logged in');
-    //             navigate(from);
-    //             return;
-    //         }
-
-    //         mutation.mutate({ email, name, photoUrl, password: null });
-    //     } catch {
-    //         toast.error('Error occurred while logging in');
-    //     }
-    // };
+    const handleGoogleLogin = async () => {
+        const result = await signIn('google')
+        if (result.ok) {
+            toast.success('New user found! Registered in System.');
+            router.push('/')
+        } else {
+            toast.error('Error occurred while logging in');
+            console.debug('Login Failed ')
+        }
+    };
 
     return (
         <div className="md:min-h-[calc(75vh)] lg:min-h-[calc(100vh-90px)] flex flex-col">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center text-primary mt-8 mb-6">
-                Login now!
+                Login
             </h1>
 
             <div className="lg:flex-1 bg-base-200 flex items-center justify-center px-4">
@@ -93,7 +58,7 @@ const Login = () => {
 
                     {/* Image (desktop only) */}
                     <div className="hidden lg:block">
-                        {/* <img src={loginImg} className="max-w-md" alt="Login" /> */}
+                        <Image height={400} width={400} src={loginImg} className="max-w-md" alt="Login" />
                     </div>
 
                     {/* Login Card */}
@@ -145,24 +110,24 @@ const Login = () => {
                                     )}
                                 </div>
 
-                                {/* <div className="text-right">
+                                <div className="text-right">
                                     <Link
-                                        to="/recover-password"
-                                        className="text-sm link link-hover"
+                                        href="/recover-password"
+                                        className="text-sm link link-hover text-primary"
                                     >
                                         Forgot password?
                                     </Link>
-                                </div> */}
+                                </div>
 
                                 <button className="btn btn-primary w-full">
                                     Login
                                 </button>
                             </form>
-                            {/* <button
+                            <button
                                 className="btn btn-primary w-full"
                                 onClick={() => handleEmailLogin({
-                                    email: import.meta.env.VITE_admin_email,
-                                    password: import.meta.env.VITE_admin_pass,
+                                    email: process.env.NEXT_PUBLIC_admin_email,
+                                    password: process.env.NEXT_PUBLIC_admin_pass,
                                 })}
                             >
                                 Demo Admin Login
@@ -170,35 +135,31 @@ const Login = () => {
                             <button
                                 className="btn btn-primary w-full"
                                 onClick={() => handleEmailLogin({
-                                    email: import.meta.env.VITE_creator_email,
-                                    password: import.meta.env.VITE_creator_pass,
-                                })}
-                            >
-                                Demo Creator Login
-                            </button>
-                            <button
-                                className="btn btn-primary w-full"
-                                onClick={() => handleEmailLogin({
-                                    email: import.meta.env.VITE_user_email,
-                                    password: import.meta.env.VITE_user_pass,
+                                    email: process.env.NEXT_PUBLIC_user_email,
+                                    password: process.env.NEXT_PUBLIC_user_pass,
                                 })}
                             >
                                 Demo User Login
-                            </button> */}
-                            {/* 
+                            </button>
                             <button
                                 onClick={handleGoogleLogin}
-                                className="btn w-full mt-3 bg-white text-black border"
-                            >
+                                className="btn bg-white text-black border-[#e5e5e5]">
+                                <svg aria-label="Google logo" width="16" height="16" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 512 512"><g><path d="m0 0H512V512H0" fill="#fff">
+                                    </path><path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341">
+                                        </path><path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path>
+                                        <path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path>
+                                        <path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path>
+                                    </g></svg>
                                 Login with Google
-                            </button> */}
-                            {/* 
+                            </button>
+
                             <p className="text-center mt-4 text-sm">
                                 Don’t have an account?{' '}
-                                <Link to="/signup" className="text-primary font-semibold">
+                                <Link href="/signup" className="text-primary font-semibold">
                                     Register now
                                 </Link>
-                            </p> */}
+                            </p>
                         </div>
                     </div>
 
