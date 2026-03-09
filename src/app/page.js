@@ -7,12 +7,11 @@ import { authOptions } from "@/lib/authOptions";
 export default async function Home() {
   const session = await getServerSession(authOptions)
   return (
-    <div>
-      hello
+    <div className="p-20 space-y-3">
       <AuthButtons />
       <AuthCard />
 
-      <div className="border">
+      <div>
         <p>Auth Info - Server : {JSON.stringify(session)}</p>
       </div>
     </div>

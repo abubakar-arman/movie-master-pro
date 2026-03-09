@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 const AuthCard = () => {
     const session = useSession();
     return (
-        <div className="border">
+        <div>
             <p>Auth Info - Client : {JSON.stringify(session)}</p>
         </div>
     );

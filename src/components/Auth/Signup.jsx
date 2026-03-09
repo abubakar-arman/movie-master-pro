@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 // import signupImg from '../../assets/signup.png';
 import { useForm } from "react-hook-form";
 import { postUser } from '@/actions/server/auth';
+import { useRouter } from 'next/navigation';
 // import { useEffect } from 'react';
 // import { useMutation, useQueryClient } from '@tanstack/react-query';
 // import useAxiosSecure from '../../hooks/useAxiosSecure';
@@ -13,22 +14,10 @@ const Signup = () => {
   // const axiosSecure = useAxiosSecure()
   // const { signup, user, loginWithGoogle } = useAuth();
   const { register, handleSubmit, formState: { errors }, setError } = useForm();
+  const router = useRouter()
   // const navigate = useNavigate();
 
-  // const queryClient = useQueryClient();
-  // const mutation = useMutation({
-  //   mutationFn: (user) => axiosSecure.post('/api/users', user),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['users'] });
-  //     toast.success('Registration successful');
-  //     navigate('/');
-  //   },
-  //   onError: (err) => console.error('Mutation Failed :', err)
-  // });
 
-  // useEffect(() => {
-  //   console.log(user);
-  // }, [user]);
 
   const invalidPassErr = `Enter a valid password:
   - Must have an Uppercase letter
@@ -42,8 +31,6 @@ const Signup = () => {
   const handleRegister = async (formData) => {
     const { email } = formData;
     // console.log('formData', formData);
-    const result = await postUser(formData)
-    console.log('result:', result);
 
 
     // const userExists = await isUserExist(email);
@@ -54,14 +41,20 @@ const Signup = () => {
     // }
 
     // // console.log('kk', userExists)
-    // try {
-    //   await signup(formData.email, formData.password, formData.name, formData.photoUrl);
-    //   mutation.mutate(formData);
-    //   navigate('/');
-    // } catch (err) {
-    //   toast.error('Incorrect information');
-    //   return err
-    // }
+    try {
+
+      const result = await postUser(formData)
+      console.log('result:', result);
+
+      if (result.acknowledged) {
+        toast.success('Registration successful');
+      }
+      router.push('/')
+    } catch (err) {
+      toast.error('Incorrect information');
+      console.error('Registration failed', err)
+      return err
+    }
   };
 
   // const handleGoogleLogin = async () => {

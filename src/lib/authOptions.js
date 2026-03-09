@@ -1,8 +1,8 @@
 
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
-import { dbConnect } from "@/lib/dbConnect";
-import bcrypt from "bcryptjs"
+import { collections, dbConnect } from "@/lib/dbConnect";
+import { loginUser } from "@/actions/server/auth";
 
 export const authOptions = {
     // Configure one or more authentication providers
@@ -11,42 +11,17 @@ export const authOptions = {
             // The name to display on the sign in form (e.g. 'Sign in with...')
             name: 'Credentials',
             credentials: {
-                email: { label: "Email", type: "email", placeholder: "Enter your email" },
-                password: { label: "Password", type: "password", placeholder: "Enter password" }
+                // email: { label: "Email", type: "email", placeholder: "Enter your email" },
+                // password: { label: "Password", type: "password", placeholder: "Enter password" }
             },
             async authorize(credentials, req) {
-                // AUTHORIZATION LOGICS //
-                // get inputs
                 const { email, password } = credentials
-
-                // find user from db
-                const user = await dbConnect("users").findOne({ email })
+                // logger.debug({ credentials });
+                // AUTHORIZATION LOGICS //
+                const user = await loginUser({ email, password })
                 if (!user) return null
 
-                // verify user credential
-                const isPasswordOk = await bcrypt.compare(password, user.password)
-                console.log({
-                    plain: password,
-                    plainHashed: await bcrypt.hash(password, 10),
-                    dbHashed: user.password
-                });
-
-                if (!isPasswordOk) return null
                 return user
-
-                // const res = await fetch("/your/endpoint", {
-                //     method: 'POST',
-                //     body: JSON.stringify(credentials),
-                //     headers: { "Content-Type": "application/json" }
-                // })
-                // const user = await res.json()
-
-                // // If no error and we have user data, return it
-                // if (res.ok && user) {
-                //     return user
-                // }
-                // // Return null if user data could not be retrieved
-                // return null
             }
         }),
         GoogleProvider({
@@ -56,30 +31,30 @@ export const authOptions = {
         // ...add more providers here
     ],
     callbacks: {
-        async signIn({ user, account, profile, email, credentials }) {
-            // console.log('OAuth login :', { user, account, profile, email, credentials })
-            try {
-                const { id, ...rest } = user
-                const payload = {
-                    ...rest,
-                    provider: account.provider,
-                    providerAccoundId: account.providerAccountId,
-                    role: "user",
-                    createdAt: new Date().toISOString()
-                }
+        // async signIn({ user, account, profile, email, credentials }) {
+        //     logger.debug('OAuth login :', { user, account, profile, email, credentials })
+        //     try {
+        //         const { id, ...rest } = user
+        //         const payload = {
+        //             ...rest,
+        //             provider: account.provider,
+        //             providerAccoundId: account.providerAccountId,
+        //             role: "user",
+        //             createdAt: new Date().toISOString()
+        //         }
 
-                const userExists = await dbConnect("users").findOne({ email: user.email })
-                if (!userExists) {
-                    const result = await dbConnect("users").insertOne(payload)
-                    console.log("user doesn't exist. inserting user into db");
-                } else {
-                    console.log("user exists. logging in");
-                }
-                return true
-            } catch (err) {
-                return false
-            }
-        },
+        //         const userExists = await dbConnect(collections.USERS).findOne({ email: user.email })
+        //         if (!userExists) {
+        //             const result = await dbConnect(collections.USERS).insertOne(payload)
+        //             logger.debug("user doesn't exist. inserting user into db");
+        //         } else {
+        //             logger.debug("user exists. logging in");
+        //         }
+        //         return true
+        //     } catch (err) {
+        //         return false
+        //     }
+        // },
         async redirect({ url, baseUrl }) {
             return baseUrl
         },
@@ -96,5 +71,8 @@ export const authOptions = {
             }
             return token
         }
+    },
+    pages: {
+        signIn: "/login",
     }
 }

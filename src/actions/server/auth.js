@@ -1,22 +1,32 @@
 "use server"
 
-import { dbConnect } from "@/lib/dbConnect"
+import { collections, dbConnect } from "@/lib/dbConnect"
+import logger from "@/lib/logger"
 import bcrypt from "bcryptjs"
 
+export const userExists = async (email) => {
+    const result = await dbConnect(collections.USERS).findOne({ email })
+    logger.debug({ result });
+
+}
+
 export const postUser = async (payload) => {
+    // 1. check payload //
     const { photoUrl, ...rest } = payload
     const { name, email, password } = rest
-    // console.log(payload)
+    // logger.debug(payload)
 
-    const userExists = await dbConnect("users").findOne({ email })
+    // 2. check user //
+    const userExists = await dbConnect(collections.USERS).findOne({ email })
     if (userExists) {
-        console.log('user exists', email);
+        logger.debug('user exists', email);
         return {
             success: 'false',
             msg: 'user_exists'
         }
     }
 
+    // 3. create user //
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = {
@@ -24,11 +34,13 @@ export const postUser = async (payload) => {
         password: hashedPassword,
         image: photoUrl,
         role: "user",
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        provider: 'credentials'
     }
-    console.log('newUser', newUser);
+    logger.debug('newUser', newUser);
 
-    const result = await dbConnect("users").insertOne(newUser)
+    // 4. insert user //
+    const result = await dbConnect(collections.USERS).insertOne(newUser)
 
     if (!result.acknowledged) {
         return {
@@ -36,10 +48,40 @@ export const postUser = async (payload) => {
             msg: 'failed'
         }
     }
-    console.log('user created:', result);
+    logger.debug('user created:', result);
     return {
         success: 'true',
         msg: 'user_created',
+        ...result,
         insertedId: result.insertedId.toString()
     }
+}
+
+export const loginUser = async (payload) => {
+    // logger.debug({ payload });
+    logger.debug('processing login...')
+
+    const { email, password } = payload
+    if (!email || !password) {
+        return null
+    }
+    // find user from db
+    const user = await dbConnect(collections.USERS).findOne({ email })
+    if (!user) {
+        logger.debug('User not found')
+        return null
+    }
+
+    const isPassMatched = await bcrypt.compare(password, user.password)
+    if (!isPassMatched) {
+        logger.debug('Password mismatch')
+        return null
+    }
+    // logger.debug({
+    //     plainPass: password,
+    //     HashedPass: await bcrypt.hash(password, 10),
+    //     dbHashed: user.password
+    // });
+    logger.debug('login successful')
+    return user
 }
