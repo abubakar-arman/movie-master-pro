@@ -4,15 +4,13 @@ import Image from "next/image";
 import AuthButtons from "@/components/Auth/AuthButtons";
 import { authOptions } from "@/lib/authOptions";
 import Navbar from "@/components/Layout/Navbar";
+import Footer from "@/components/Layout/Footer";
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
   return (
     <div>
-      <section>
-        <Navbar />
-      </section>
-
+      hello
     </div>
   );
 }

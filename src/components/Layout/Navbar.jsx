@@ -1,5 +1,4 @@
 "use client"
-import logo from '../../assests/logo.png'
 import { useEffect, useState } from 'react';
 import { MdDarkMode } from "react-icons/md";
 import { MdLightMode } from "react-icons/md";
@@ -9,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Logo from './Logo';
 
 const Navbar = () => {
     const [theme, setTheme] = useState(() => {
@@ -91,7 +91,7 @@ const Navbar = () => {
                     </ul>
                 </div>
                 <Link href='/' className="flex items-center font-extrabold text-primary">
-                    <Image src={logo} alt="" className='w-20' />
+                    <Logo />
                     <p>MovieMaster Pro</p>
                 </Link>
             </div>
