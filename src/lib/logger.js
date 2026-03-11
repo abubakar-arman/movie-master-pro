@@ -1,6 +1,7 @@
 import pino from 'pino';
 
 const isBrowser = typeof window !== 'undefined';
+const isDev = process.env.NODE_ENV === 'development';
 
 const logger = pino({
     level: process.env.NEXT_PUBLIC_LOG_LEVEL ?? 'info',
@@ -12,10 +13,12 @@ const logger = pino({
                 write: (obj) => console.log(obj),
             },
         }
-        : {
-            // server-side output + pretty printing
-            transport: { target: 'pino-pretty' },
-        }),
+        : isDev
+            ? {
+                // pretty printing only in local development
+                transport: { target: 'pino-pretty' },
+            }
+            : {}),
 });
 
 export default logger;
